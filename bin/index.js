@@ -31,11 +31,11 @@ let deleteDuplicates = true;
 let generateMetadata = true;
 
 //DEFINITIONS
-const getDirectories = source =>
+const getDirectories = (source) =>
   fs
     .readdirSync(source, { withFileTypes: true })
-    .filter(dirent => dirent.isDirectory())
-    .map(dirent => dirent.name);
+    .filter((dirent) => dirent.isDirectory())
+    .map((dirent) => dirent.name);
 
 //OPENING
 console.log(
@@ -75,10 +75,10 @@ async function main() {
     loadingDirectories.succeed();
     loadingDirectories.clear();
     await traitsOrder(true);
-    await asyncForEach(traits, async trait => {
+    await asyncForEach(traits, async (trait) => {
       await setNames(trait);
     });
-    await asyncForEach(traits, async trait => {
+    await asyncForEach(traits, async (trait) => {
       await setWeights(trait);
     });
     await generateImages();
@@ -104,31 +104,33 @@ async function main() {
 
 //GET THE BASEPATH FOR THE IMAGES
 async function getBasePath() {
-  const { base_path } = await inquirer.prompt([
-    {
-      type: 'list',
-      name: 'base_path',
-      message: 'Where are your images located?',
-      choices: [
-        { name: 'In the current directory', value: 0 },
-        { name: 'Somewhere else on my computer', value: 1 },
-      ],
-    },
-  ]);
-  if (base_path === 0) {
-    basePath = process.cwd() + '/images/';
-  } else {
-    const { file_location } = await inquirer.prompt([
-      {
-        type: 'input',
-        name: 'file_location',
-        message: 'Enter the path to your image files (Absolute filepath)',
-      },
-    ]);
-    let lastChar = file_location.slice(-1);
-    if (lastChar === '/') basePath = file_location;
-    else basePath = file_location + '/';
-  }
+  console.log('hello');
+  // const { base_path } = await inquirer.prompt([
+  //   {
+  //     type: 'list',
+  //     name: 'base_path',
+  //     message: 'Where are your images located?',
+  //     choices: [
+  //       { name: 'In the current directory', value: 0 },
+  //       { name: 'Somewhere else on my computer', value: 1 },
+  //     ],
+  //   },
+  // ]);
+  // console.log('base_path', base_path);
+  // if (base_path === 0) {
+  basePath = process.cwd() + '/images/';
+  // } else {
+  //   const { file_location } = await inquirer.prompt([
+  //     {
+  //       type: 'input',
+  //       name: 'file_location',
+  //       message: 'Enter the path to your image files (Absolute filepath)',
+  //     },
+  //   ]);
+  //   let lastChar = file_location.slice(-1);
+  //   if (lastChar === '/') basePath = file_location;
+  //   else basePath = file_location + '/';
+  // }
 }
 
 //GET THE OUTPUTPATH FOR THE IMAGES
@@ -144,6 +146,7 @@ async function getOutputPath() {
       ],
     },
   ]);
+  console.log('output_path', output_path);
   if (output_path === 0) {
     outputPath = process.cwd() + '/output/';
   } else {
@@ -151,8 +154,7 @@ async function getOutputPath() {
       {
         type: 'input',
         name: 'file_location',
-        message:
-          'Enter the path to your output_old directory (Absolute filepath)',
+        message: 'Enter the path to your output_old directory (Absolute filepath)',
       },
     ]);
     let lastChar = file_location.slice(-1);
@@ -162,26 +164,26 @@ async function getOutputPath() {
 }
 
 async function checkForDuplicates() {
-  let { checkDuplicates } = await inquirer.prompt([
-    {
-      type: 'confirm',
-      name: 'checkDuplicates',
-      message:
-        'Should duplicated images be deleted? (Might result in less images then expected)',
-    },
-  ]);
-  deleteDuplicates = checkDuplicates;
+  console.log('why');
+  // let { checkDuplicates } = await inquirer.prompt([
+  //   {
+  //     type: 'confirm',
+  //     name: 'checkDuplicates',
+  //     message: 'Should duplicated images be deleted? (Might result in less images then expected)',
+  //   },
+  // ]);
+  // deleteDuplicates = checkDuplicates;
 }
 
 async function generateMetadataPrompt() {
-  let { createMetadata } = await inquirer.prompt([
-    {
-      type: 'confirm',
-      name: 'createMetadata',
-      message: 'Should metadata be generated?',
-    },
-  ]);
-  generateMetadata = createMetadata;
+  // let { createMetadata } = await inquirer.prompt([
+  //   {
+  //     type: 'confirm',
+  //     name: 'createMetadata',
+  //     message: 'Should metadata be generated?',
+  //   },
+  // ]);
+  // generateMetadata = createMetadata;
 }
 
 async function metadataSettings() {
@@ -218,7 +220,7 @@ async function traitsOrder(isFirst) {
   };
   traitsPrompt.message = 'Which trait should be on top of that?';
   if (isFirst === true) traitsPrompt.message = 'Which trait is the background?';
-  traitsToSort.forEach(trait => {
+  traitsToSort.forEach((trait) => {
     const globalIndex = traits.indexOf(trait);
     traitsPrompt.choices.push({
       name: trait.toUpperCase(),
@@ -276,10 +278,10 @@ async function asyncForEach(array, callback) {
 
 //GENERATE WEIGHTED TRAITS
 async function generateWeightedTraits() {
-  traits.forEach(trait => {
+  traits.forEach((trait) => {
     const traitWeights = [];
     const files = fs.readdirSync(basePath + '/' + trait);
-    files.forEach(file => {
+    files.forEach((file) => {
       for (let i = 0; i < weights[file]; i++) {
         traitWeights.push(file);
       }
@@ -297,8 +299,14 @@ async function generateImages() {
   if (deleteDuplicates) {
     while (weightedTraits[0].length > 0 && noMoreMatches < 20) {
       let picked = [];
-      order.forEach(id => {
+      order.forEach((id) => {
+        console.log('order id', id);
         let pickedImgId = pickRandom(weightedTraits[id]);
+        console.log('pickedImgId', pickedImgId);
+        const wasFemaleSelected = images.some((image) => image.includes('female'));
+        if (wasFemaleSelected && id.includes('facial_hair')) {
+          pickedImgId = 'empty';
+        }
         picked.push(pickedImgId);
         let pickedImg = weightedTraits[id][pickedImgId];
         images.push(basePath + traits[id] + '/' + pickedImg);
@@ -322,10 +330,8 @@ async function generateImages() {
     }
   } else {
     while (weightedTraits[0].length > 0) {
-      order.forEach(id => {
-        images.push(
-          basePath + traits[id] + '/' + pickRandomAndRemove(weightedTraits[id])
-        );
+      order.forEach((id) => {
+        images.push(basePath + traits[id] + '/' + pickRandomAndRemove(weightedTraits[id]));
       });
       generateMetadataObject(id, images);
       const b64 = await mergeImages(images, { Canvas: Canvas, Image: Image });
@@ -360,10 +366,8 @@ function remove(array, toPick) {
 
 function existCombination(contains) {
   let exists = false;
-  seen.forEach(array => {
-    let isEqual =
-      array.length === contains.length &&
-      array.every((value, index) => value === contains[index]);
+  seen.forEach((array) => {
+    let isEqual = array.length === contains.length && array.every((value, index) => value === contains[index]);
     if (isEqual) exists = true;
   });
   return exists;
@@ -387,7 +391,7 @@ function generateMetadataObject(id, images) {
 }
 
 async function writeMetadata() {
-  fs.writeFile(outputPath + 'metadata.json', JSON.stringify(metaData), err => {
+  fs.writeFile(outputPath + 'metadata.json', JSON.stringify(metaData), (err) => {
     if (err) {
       throw err;
     }
